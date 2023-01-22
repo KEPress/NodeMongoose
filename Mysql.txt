@@ -1,0 +1,116 @@
+CONNECT MySql Database config
+
+const mysql = require('mysql2')
+
+const pool = mysql.createPool({
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    database: 'expressshop',
+    password: 'deofePBBC1520'
+})
+
+module.exports = pool.promise()
+
+A MySql Model Class example
+
+const CartModel = require('./cart_model')
+const database = require('../util/database')
+
+module.exports = class Products {
+    
+    constructor(id, title, imageURL, details, price) {
+        this.id = id
+        this.title = title
+        this.imageURL = imageURL
+        this.details = details
+        this.price = price
+    }
+
+
+    commit() {
+       return database.execute (
+            'INSERT INTO products (title, price, details, imageURL) VALUES (?, ?, ?, ?)',
+            [this.title, this.price, this.details, this.imageURL]    
+        )
+    }
+
+    static deleteByID(id) {
+
+    }
+
+    static fetchAll() {
+       return database.execute('SELECT * FROM products')
+    }
+
+    static fetchID(id) {
+       return database.execute('SELECT * FROM products WHERE products.id =?', [id])
+    }
+
+} 
+
+MySql Controller Class
+
+const ProductModel = require('../models/products_model')
+
+exports.addProductPage = (request, response, next) => {
+    response.render('admin/admin-products', { 
+        pageTitle: 'Add Product', 
+        path: '/admin/add-product',
+        edit: false
+    })
+ }
+
+ exports.postAddProduct = (request, response, next) => {
+    const title = request.body.title
+    const imageURL = request.body.imageURL
+    const details = request.body.details
+    const price = request.body.price
+    const product = new ProductModel(null, title, imageURL, details, price)
+    product.commit().then( function() {
+        response.redirect('/')
+    }).catch((error) => console.log(error))
+}
+
+exports.editProductPage = (request, response, next) => {
+    const editMode = request.query.edit
+    if (!editMode) return response.redirect('/')
+    const productID = request.params.productID
+    ProductModel.fetchID(productID, (product) => {
+        if (!product) return response.redirect('/')
+        response.render('admin/admin-products', { 
+            pageTitle: 'Edit Product', 
+            path: '/admin/edit-product',
+            edit: editMode,
+            product: product
+        })
+    })
+ }
+
+ exports.postEditProduct = (request, response, next) => {
+    const productID = request.body.productID
+    const updateTitle = request.body.title
+    const updateImage = request.body.imageURL
+    const updateDetails = request.body.details
+    const updatePrice = request.body.price
+    const update = new ProductModel(productID, updateTitle, updateImage, updateDetails, updatePrice)
+    update.commit()
+    response.redirect('/admin/products')
+ }
+
+
+exports.postDeleteProduct = (request, response, next) => {
+    const productID  = request.body.productID
+    ProductModel.remove(productID)
+    response.redirect('/admin/products')
+}
+
+exports.getProductsPage = (request, response, next) => {
+    ProductModel.fetchAll((products) => {
+        response.render('admin/products', {
+            pageTitle: 'Admin Products',
+            path: '/admin/products',
+            prods: products
+        })
+    })
+}

@@ -1,0 +1,22 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+</head>
+<body>
+  
+    <%- include('../includes/navigate.ejs') %>
+    <main>
+        <% if(errorMessage) { %>
+            <div class="info-message info-message-error">
+                <%= errorMessage %>
+            </div>
+        <% } %>
+        <form action="/reset" method="POST" class="login-form">
+            <div class="form-content">
+                <label for="emai">Email</label>
+                <input type="text" name="email" id="email" />
+            </div>
+           <%- include('../includes/csrf.ejs') %>
+            <button type="submit">Reset Passcode</button>
+        </form>
+    </main>
+<%- include('../includes/end.ejs') %>

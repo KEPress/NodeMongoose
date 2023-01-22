@@ -1,0 +1,3 @@
+NOTE: ejs code must have tags close for info to be read e.g. %>value<% no escape allowed
+
+hence this is a ridiculous framework as html comments cannot be allowed as it can throw an error. 

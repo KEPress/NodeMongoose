@@ -1,0 +1,130 @@
+const fileSystem = require('fs')
+const path = require('path') // using a json file as a Database to store data
+const filepath = path.join(path.dirname(process.mainModule.filename), 'data', 'products.json')
+const CartModel = require('./cart_model')
+
+const getFileInfo = (callback) => {
+    fileSystem.readFile(filepath, (error, content) => {
+        try {
+                if (error) return callback([])
+                else callback(JSON.parse(content)) 
+        } catch (error) {
+            console.log(error)
+        }
+           
+    })
+}
+
+
+module.exports = class Products {
+    constructor(id, title, imageURL, details, price) {
+        this.id = id
+        this.title = title
+        this.imageURL = imageURL
+        this.details = details
+        this.price = price
+    }
+
+    commit() {
+       getFileInfo((products = []) => {
+            //Check for existing product to update
+            if (this.id) {
+                const productIndex = products.findIndex((prod) => prod.id === this.id)
+                const updatedProduct = [...products]
+                updatedProduct[productIndex] = this
+                fileSystem.writeFile(filepath, JSON.stringify(updatedProduct), (error) => {
+                    console.log(error)
+                })
+            } else {
+                //Create a new product 
+                this.id = Math.random().toString()
+                products.push(this)
+                fileSystem.writeFile(filepath, JSON.stringify(products), (error) => {
+                        console.log(error)
+                })
+            }
+       })
+    }
+
+
+   static remove(id) {
+        getFileInfo((products = []) => {
+            const product = products.find((item) => item.id === id)
+            const updatedProducts = products.filter((item) => item.id !== id)
+            fileSystem.writeFile(filepath, JSON.stringify(updatedProducts), (error) => {
+                if (!error) CartModel.deleteProduct(id, product.price)
+            })
+        })
+    }
+    
+    static fetchAll(callback){
+        getFileInfo(callback)
+    }
+
+    static fetchID (id, callback){
+        getFileInfo((products = []) => {
+            const product = products.find((product) => product.id === id)
+            callback(product)
+        })
+    }
+}
+
+
+const fileSystem = require('fs')
+const path = require('path') // using a json file as a Database to store data
+const filepath = path.join(path.dirname(process.mainModule.filename), 'data', 'cart.json')
+
+module.exports = class Cart {
+
+   static addProduct(id, product_price) {
+        //fetch from previous cart
+        fileSystem.readFile(filepath, (error, content) => {
+            let cart = { products: [], totalPrice: 0 } //object array to store cart info
+            if (!error) cart = JSON.parse(content)   
+            
+             //Analyse cart and locate  stock/inventory for existing product
+             const productIndex = cart.products.findIndex((product) => product.id === id)
+             const existingProduct = cart.products[productIndex]
+             let updatedProduct
+             if (existingProduct) {
+                updatedProduct = { ...existingProduct }
+                updatedProduct.quantity = updatedProduct.quantity + 1
+                cart.products = [...cart.products]
+                cart.products[productIndex] = updatedProduct
+             } else {
+                updatedProduct = { id: id, quantity: 1 }
+                cart.products = [...cart.products, updatedProduct]
+             }
+            //Add new product or increase quantity
+             cart.totalPrice = cart.totalPrice + parseFloat(product_price) 
+             fileSystem.writeFileSync(filepath, JSON.stringify(cart), (error) => {
+                console.log(error)
+             })
+        })
+   }
+
+
+   static deleteProduct(id, product_price) {
+        fileSystem.readFile(filepath, (error, content) => {
+            if (error) return
+            const updatedCart = {...JSON.parse(content) }
+            const product = updatedCart.products.findIndex((item) => item.id === id)
+            if (!product) return
+            const quantity = product.quantity
+            updatedCart.products = updatedCart.products.filter((item) => item.id !== id)
+            updatedCart.totalPrice = updatedCart.totalPrice - product_price * quantity
+            fileSystem.writeFileSync(filepath, JSON.stringify(updatedCart), (error) => {
+                console.log(error)
+            })
+        })
+    }
+
+    static getCartItems(callback) {
+        fileSystem.readFile(filepath, (error, content) => {
+           const cart = JSON.parse(content)
+           if (error) callback(null)
+           else callback(cart)
+        })
+    }
+    
+}

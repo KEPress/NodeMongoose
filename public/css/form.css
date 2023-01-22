@@ -1,0 +1,64 @@
+.product-form {
+    width: 20rem;
+    max-width: 90%;
+    margin: auto;
+}
+
+.login-form {
+    width: 20rem;
+    max-width: 90%;
+    margin: auto;
+}
+
+.register-form {
+    width: 20rem;
+    max-width: 90%;
+    margin: auto;
+}
+
+.form-content {
+    margin: 1rem 0;
+}
+
+.form-content label, .form-content input, .form-content textarea {
+    display: block;
+    width: 100%;
+}
+.form-content input, .form-content textarea {
+    border: 1px solid rgba(230, 26, 19, 0.788);
+    font: inherit;
+    border-radius: 2px;
+    padding: 0 1rem;
+}
+
+button {
+    font: inherit;
+    color: #fff;
+    border: 1px solid rgba(230, 26, 19, 0.788);
+    background: rgba(230, 26, 19, 0.788);
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+button:hover, 
+button:active {
+    background-color: rgba(240, 225, 15, 0.555);
+    color: rgba(230, 26, 19, 0.788);
+}
+
+.info-message {
+    margin:auto;
+    width: 250px; height: 15px;
+    padding: 1rem;
+    text-align: center;
+    color: darkgoldenrod;
+    background-color: rgba(240, 225, 15, 0.555);
+    border: 1px solid rgba(240, 225, 15, 0.555);
+    border-radius: 3px;
+}
+
+.info-message-error {
+    background-color: rgba(230, 26, 19, 0.788);
+    color: #fff;
+}
